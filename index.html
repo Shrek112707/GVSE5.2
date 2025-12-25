@@ -20,6 +20,7 @@
             margin: 0;
             overflow: hidden;
             text-align: center;
+            cursor: pointer; /* Shows user they can click anywhere */
         }
 
         @keyframes gradientBG {
@@ -28,20 +29,21 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Floating Animation for Flowers and Butterflies */
+        /* Particles: Flowers and Butterflies */
         .particle {
             position: absolute;
             user-select: none;
             pointer-events: none;
-            animation: floatUp 12s linear infinite;
+            animation: floatUp 10s linear infinite;
             opacity: 0;
+            z-index: 1;
         }
 
         @keyframes floatUp {
             0% { transform: translateY(110vh) translateX(0) rotate(0deg); opacity: 0; }
             10% { opacity: 0.8; }
             90% { opacity: 0.8; }
-            100% { transform: translateY(-20vh) translateX(50px) rotate(360deg); opacity: 0; }
+            100% { transform: translateY(-20vh) translateX(100px) rotate(360deg); opacity: 0; }
         }
 
         .glass-card {
@@ -80,7 +82,6 @@
 
         input:focus {
             width: 380px;
-            box-shadow: 0 0 25px rgba(240, 98, 146, 0.3);
         }
 
         #status {
@@ -93,73 +94,93 @@
             line-height: 1.6;
         }
 
-        /* Hidden Audio Player */
-        #music-container {
+        /* Hidden YouTube Audio */
+        #video-overlay {
             position: absolute;
-            bottom: -100px;
-            opacity: 0;
+            top: -500px;
+            left: -500px;
+            width: 1px;
+            height: 1px;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <div class="particle" style="left: 5%; animation-delay: 0s; font-size: 25px;">🌸</div>
-    <div class="particle" style="left: 15%; animation-delay: 4s; font-size: 30px;">🦋</div>
-    <div class="particle" style="left: 25%; animation-delay: 2s; font-size: 20px;">🌷</div>
-    <div class="particle" style="left: 35%; animation-delay: 8s; font-size: 28px;">🦋</div>
-    <div class="particle" style="left: 45%; animation-delay: 1s; font-size: 22px;">🌹</div>
-    <div class="particle" style="left: 55%; animation-delay: 6s; font-size: 35px;">🌸</div>
-    <div class="particle" style="left: 65%; animation-delay: 3s; font-size: 24px;">🦋</div>
-    <div class="particle" style="left: 75%; animation-delay: 9s; font-size: 30px;">🌷</div>
-    <div class="particle" style="left: 85%; animation-delay: 5s; font-size: 22px;">🦋</div>
-    <div class="particle" style="left: 95%; animation-delay: 2s; font-size: 26px;">🌹</div>
-
-    <div class="glass-card">
-        <h2>Luxury Verification</h2>
-        <input type="text" id="magicInput" placeholder="Enter Magic Word..." autofocus>
-        <p id="status">Please identify yourself to proceed.</p>
-    </div>
-
-    <div id="music-container">
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/8GOv_Y9mE0M?autoplay=1&loop=1&playlist=8GOv_Y9mE0M" frameborder="0" allow="autoplay"></iframe>
+    <div id="video-overlay">
+        <div id="player"></div>
     </div>
 
     <script>
-        // Emails are DISABLED for testing as requested
-        window.onload = function() {
-            console.log("TEST MODE: Load alert bypassed.");
-            // emailjs.init("3F59IaiHORSIuUv05");
-            // emailjs.send('service_dnrt357', 'template_rd9nmp8', { message: "ALERT: Opened!" });
-        };
+        const symbols = ['🌸', '🦋', '🌷', '🌹', '🦋', '✨'];
+        for (let i = 0; i < 30; i++) {
+            let p = document.createElement('div');
+            p.className = 'particle';
+            p.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+            p.style.left = Math.random() * 100 + '0%';
+            p.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            p.style.animationDelay = (Math.random() * 10) + 's';
+            p.style.animationDuration = (Math.random() * 5 + 8) + 's';
+            document.body.appendChild(p);
+        }
+    </script>
 
+    <div class="glass-card">
+        <h2>Identify Yourself</h2>
+        <input type="text" id="magicInput" placeholder="Enter Magic Word..." autofocus>
+        <p id="status">Please click anywhere to start the magic!</p>
+    </div>
+
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        let player;
+        let musicStarted = false;
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                height: '0',
+                width: '0',
+                videoId: '8GOv_Y9mE0M', // Nothin' On You
+                playerVars: { 'autoplay': 0, 'loop': 1, 'playlist': '8GOv_Y9mE0M' },
+                events: { 'onReady': onPlayerReady }
+            });
+        }
+
+        function onPlayerReady(event) {
+            // Player is ready, waiting for click
+        }
+
+        // START MUSIC ON CLICK ANYWHERE
+        document.body.addEventListener('click', () => {
+            if (!musicStarted && player) {
+                player.playVideo();
+                musicStarted = true;
+                if(document.getElementById('status').innerText === "Please click anywhere to start the magic!") {
+                    document.getElementById('status').innerText = "Awaiting verification...";
+                }
+            }
+        });
+
+        // --- EMAIL LOGIC (DISABLED FOR TESTING) ---
         const inputField = document.getElementById('magicInput');
         const statusText = document.getElementById('status');
         let hasSentWordEmail = false; 
 
         inputField.addEventListener('input', (e) => {
             const val = e.target.value.toUpperCase();
-            
             if (val === "ARPON1127" && !hasSentWordEmail) {
                 hasSentWordEmail = true; 
-                
                 const now = new Date();
                 const unlockDate = new Date('2026-01-01T00:00:00');
 
                 if (now < unlockDate) {
                     statusText.style.background = "rgba(255, 255, 255, 0.4)";
                     statusText.innerText = "🌸 You are indeed Hannah! Sadly, it's not January 1st yet. Please come back on January 1st; an email has been sent to you if the verification has went through the system.";
-                    
                     console.log("TEST MODE: Early Alert Bypassed.");
-                    // emailjs.init("3F59IaiHORSIuUv05");
-                    // emailjs.send('service_dnrt357', 'template_rd9nmp8', { message: "Early access attempt" });
-
                 } else {
                     statusText.style.background = "rgba(255, 255, 255, 0.4)";
                     statusText.innerText = "✨ Happy New Year! Sending your gift email now...";
-                    
                     console.log("TEST MODE: Jan 1st Email Bypassed.");
-                    // emailjs.init("LOBy-ZuOzcwB6o5TL");
-                    // emailjs.send('service_zdle2oc', 'template_xq8i459', { message: "Official Jan 1st trigger" });
                 }
             }
         });
